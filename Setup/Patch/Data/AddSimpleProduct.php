@@ -75,8 +75,8 @@ class AddSimpleProduct implements DataPatchInterface
     public function assignCategories(\Magento\Catalog\Api\Data\ProductInterface $product): void
     {
         $categoryCollection = $this->categoryCollectionFactory->create();
-        $categoryIds = $categoryCollection->addAttributeToFilter('name', ['in', 'Men', 'Women'])->getAllIds();
-        
+        $categoryIds = $categoryCollection->addAttributeToFilter('name', ['in' => ['Men', 'Women']])->getAllIds();
+
         $this->categoryLink->assignProductToCategories($product->getSku(), $categoryIds);
     }
 }
