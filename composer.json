@@ -1,0 +1,22 @@
+{
+    "name": "scandiweb/test",
+    "description": "Working with catalog data patch assignment",
+    "type": "magento2-module",
+    "autoload": {
+        "psr-4": {
+            "Scandiweb\\Test\\": ""
+        },
+        "files": [
+            "registration.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Mahmoud Shiref",
+            "email": "mahmoud.shiref@scandiweb.com"
+        }
+    ],
+    "require": {
+        "../../../../vendor/magento/module-catalog-sample-data": "*"
+    }
+}
