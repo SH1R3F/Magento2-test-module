@@ -16,6 +16,10 @@ use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\StateException;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
+use Magento\Framework\Validation\ValidationException;
+use Magento\InventoryApi\Api\Data\SourceItemInterface;
+use Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory;
+use Magento\InventoryApi\Api\SourceItemsSaveInterface;
 
 class AddSimpleProduct implements DataPatchInterface
 {
@@ -49,13 +53,30 @@ class AddSimpleProduct implements DataPatchInterface
      */
     protected CategoryLinkManagementInterface $categoryLink;
 
+    /**
+     * @var SourceItemInterfaceFactory
+     */
+    protected SourceItemInterfaceFactory $sourceItemFactory;
+
+    /**
+     * @var SourceItemsSaveInterface
+     */
+    protected SourceItemsSaveInterface $sourceItemsSaveInterface;
+
+    /**
+     * @var array
+     */
+    protected array $sourceItems = [];
+
     public function __construct(
         State $appState,
         ProductInterfaceFactory $productFactory,
         EavSetup $eavSetup,
         ProductRepositoryInterface $productRepository,
         CollectionFactory $categoryCollectionFactory,
-        CategoryLinkManagementInterface $categoryLink
+        CategoryLinkManagementInterface $categoryLink,
+        SourceItemInterfaceFactory $sourceItemFactory,
+        SourceItemsSaveInterface $sourceItemsSaveInterface
     ) {
         $this->appState = $appState;
         $this->productFactory = $productFactory;
@@ -63,6 +84,8 @@ class AddSimpleProduct implements DataPatchInterface
         $this->productRepository = $productRepository;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->categoryLink = $categoryLink;
+        $this->sourceItemFactory = $sourceItemFactory;
+        $this->sourceItemsSaveInterface = $sourceItemsSaveInterface;
     }
 
     /**
@@ -133,7 +156,7 @@ class AddSimpleProduct implements DataPatchInterface
             ->setVisibility(Product\Visibility::VISIBILITY_BOTH)
             ->setStatus(Product\Attribute\Source\Status::STATUS_ENABLED);
 
-        // TODO: Set Product Quantity
+        $this->addInventory($product);
 
         // Save product
         return $this->productRepository->save($product);
@@ -152,5 +175,25 @@ class AddSimpleProduct implements DataPatchInterface
             ->getAllIds();
 
         $this->categoryLink->assignProductToCategories($product->getSku(), $categoryIds);
+    }
+
+    /**
+     * @param Product $product
+     * @return void
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws ValidationException
+     */
+    protected function addInventory(Product $product): void
+    {
+        $sourceItem = $this->sourceItemFactory->create();
+        $sourceItem->setSourceCode('default');
+
+        $sourceItem->setQuantity(100);
+        $sourceItem->setSku($product->getSku());
+        $sourceItem->setStatus(SourceItemInterface::STATUS_IN_STOCK);
+        
+        $this->sourceItems[] = $sourceItem;
+        $this->sourceItemsSaveInterface->execute($this->sourceItems);
     }
 }
