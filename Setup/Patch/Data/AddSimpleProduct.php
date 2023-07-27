@@ -2,6 +2,7 @@
 
 namespace Scandiweb\Test\Setup\Patch\Data;
 
+use Exception;
 use Magento\Catalog\Api\CategoryLinkManagementInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
@@ -68,6 +69,16 @@ class AddSimpleProduct implements DataPatchInterface
      */
     protected array $sourceItems = [];
 
+    /**
+     * @param State $appState
+     * @param ProductInterfaceFactory $productFactory
+     * @param EavSetup $eavSetup
+     * @param ProductRepositoryInterface $productRepository
+     * @param CollectionFactory $categoryCollectionFactory
+     * @param CategoryLinkManagementInterface $categoryLink
+     * @param SourceItemInterfaceFactory $sourceItemFactory
+     * @param SourceItemsSaveInterface $sourceItemsSaveInterface
+     */
     public function __construct(
         State $appState,
         ProductInterfaceFactory $productFactory,
@@ -90,7 +101,7 @@ class AddSimpleProduct implements DataPatchInterface
 
     /**
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function apply(): void
     {
