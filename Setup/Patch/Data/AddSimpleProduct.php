@@ -3,6 +3,7 @@
 namespace Scandiweb\Test\Setup\Patch\Data;
 
 use Magento\Catalog\Api\CategoryLinkManagementInterface;
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
@@ -10,6 +11,10 @@ use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\CatalogSampleData\Setup\Patch\Data\InstallCatalogSampleData;
 use Magento\Eav\Setup\EavSetup;
 use Magento\Framework\App\State;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\StateException;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 
 class AddSimpleProduct implements DataPatchInterface
@@ -60,12 +65,22 @@ class AddSimpleProduct implements DataPatchInterface
         $this->categoryLink = $categoryLink;
     }
 
-    public function apply(): self
+    /**
+     * @return void
+     * @throws \Exception
+     */
+    public function apply(): void
     {
         $this->appState->emulateAreaCode('adminhtml', [$this, 'execute']);
-        return $this;
     }
 
+    /**
+     * @return void
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws LocalizedException
+     * @throws StateException
+     */
     public function execute(): void
     {
         /** @var Product $product */
@@ -80,17 +95,31 @@ class AddSimpleProduct implements DataPatchInterface
         $this->assignCategories($product);
     }
 
+    /**
+     * @return string[]
+     */
     public static function getDependencies(): array
     {
         return [InstallCatalogSampleData::class];
     }
 
+    /**
+     * @return array|string[]
+     */
     public function getAliases(): array
     {
         return [];
     }
 
-    private function createProduct(Product $product): \Magento\Catalog\Api\Data\ProductInterface
+    /**
+     * @param Product $product
+     * @return ProductInterface
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws LocalizedException
+     * @throws StateException
+     */
+    protected function createProduct(Product $product): ProductInterface
     {
         $defaultAttributeSetId = $this->eavSetup->getAttributeSetId(Product::ENTITY, 'Default');
 
@@ -104,14 +133,23 @@ class AddSimpleProduct implements DataPatchInterface
             ->setVisibility(Product\Visibility::VISIBILITY_BOTH)
             ->setStatus(Product\Attribute\Source\Status::STATUS_ENABLED);
 
+        // TODO: Set Product Quantity
+
         // Save product
         return $this->productRepository->save($product);
     }
 
-    public function assignCategories(\Magento\Catalog\Api\Data\ProductInterface $product): void
+    /**
+     * @param ProductInterface $product
+     * @return void
+     * @throws LocalizedException
+     */
+    public function assignCategories(ProductInterface $product): void
     {
-        $categoryCollection = $this->categoryCollectionFactory->create();
-        $categoryIds = $categoryCollection->addAttributeToFilter('name', ['in' => ['Men', 'Women']])->getAllIds();
+        $categoryTitles = ['Men', 'Women'];
+        $categoryIds = $this->categoryCollectionFactory->create()
+            ->addAttributeToFilter('name', ['in' => $categoryTitles])
+            ->getAllIds();
 
         $this->categoryLink->assignProductToCategories($product->getSku(), $categoryIds);
     }
