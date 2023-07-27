@@ -154,7 +154,13 @@ class AddSimpleProduct implements DataPatchInterface
             ->setUrlKey('resistanceband')
             ->setPrice(5.99)
             ->setVisibility(Product\Visibility::VISIBILITY_BOTH)
-            ->setStatus(Product\Attribute\Source\Status::STATUS_ENABLED);
+            ->setStatus(Product\Attribute\Source\Status::STATUS_ENABLED)
+            ->setStockData([
+                'use_config_manage_stock' => 1,
+                'is_qty_decimal' => 0,
+                'is_in_stock' => 1,
+                'qty' => 100
+            ]);
 
         $this->addInventory($product);
 
@@ -192,7 +198,7 @@ class AddSimpleProduct implements DataPatchInterface
         $sourceItem->setQuantity(100);
         $sourceItem->setSku($product->getSku());
         $sourceItem->setStatus(SourceItemInterface::STATUS_IN_STOCK);
-        
+
         $this->sourceItems[] = $sourceItem;
         $this->sourceItemsSaveInterface->execute($this->sourceItems);
     }
