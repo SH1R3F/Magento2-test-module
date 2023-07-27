@@ -14,14 +14,50 @@ use Magento\Framework\Setup\Patch\DataPatchInterface;
 
 class AddSimpleProduct implements DataPatchInterface
 {
+    /**
+     * @var State
+     */
+    protected State $appState;
+
+    /**
+     * @var ProductInterfaceFactory
+     */
+    protected ProductInterfaceFactory $productFactory;
+
+    /**
+     * @var EavSetup
+     */
+    protected EavSetup $eavSetup;
+
+    /**
+     * @var ProductRepositoryInterface
+     */
+    protected ProductRepositoryInterface $productRepository;
+
+    /**
+     * @var CollectionFactory
+     */
+    protected CollectionFactory $categoryCollectionFactory;
+
+    /**
+     * @var CategoryLinkManagementInterface
+     */
+    protected CategoryLinkManagementInterface $categoryLink;
+
     public function __construct(
-        private State $appState,
-        private ProductInterfaceFactory $productFactory,
-        private EavSetup $eavSetup,
-        private ProductRepositoryInterface $productRepository,
-        private CollectionFactory $categoryCollectionFactory,
-        private CategoryLinkManagementInterface $categoryLink
+        State $appState,
+        ProductInterfaceFactory $productFactory,
+        EavSetup $eavSetup,
+        ProductRepositoryInterface $productRepository,
+        CollectionFactory $categoryCollectionFactory,
+        CategoryLinkManagementInterface $categoryLink
     ) {
+        $this->appState = $appState;
+        $this->productFactory = $productFactory;
+        $this->eavSetup = $eavSetup;
+        $this->productRepository = $productRepository;
+        $this->categoryCollectionFactory = $categoryCollectionFactory;
+        $this->categoryLink = $categoryLink;
     }
 
     public function apply(): self
